@@ -18,6 +18,9 @@ start() {
     else
         "$LNSD_BIN" > "$LNSD_LOG" 2>&1 &
         echo "[+] lnsd successfully started in the background."
+        # Classic race condition fix: Give lnsd a moment to initialize and open its IPC socket
+        echo "Waiting for lnsd to initialize and create IPC socket..."
+        sleep 3
     fi
 
     echo "Preparing cache in RAM..."
