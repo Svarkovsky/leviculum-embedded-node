@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# ==============================================================================
+# SOCAT SAM BRIDGE FOR I2P
+# ==============================================================================
+ENABLED=yes
+PROCS=socat
+PATH=/opt/sbin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+TARGET_IP="192.168.5.100"
+TARGET_PORT="7656"
+LOCAL_PORT="7656"
+# ==============================================================================
+
+start() {
+    [ "$ENABLED" != "yes" ] && return
+    
+    if netstat -an | grep -q ":${LOCAL_PORT}.*LISTEN"; then
+        echo "socat bridge is already running (port ${LOCAL_PORT} is busy)."
+        return 0
+    fi
+
+    echo "Starting resilient auto-restarting socat loop..."
+    
+    # Run a persistent loop in the background: if socat drops, restart after 1 second
+    (
+        while true; do
+            socat TCP4-LISTEN:${LOCAL_PORT},reuseaddr,fork TCP4:${TARGET_IP}:${TARGET_PORT},connect-timeout=5
+            sleep 1
+        done
+    ) >/dev/null 2>&1 &
+    
+    echo "Done."
+}
+
+stop() {
+    echo "Stopping socat loop and processes..."
+    # Safely find all background S50socat processes and terminate them
+    for pid in $(ps w | grep "S50socat" | grep -v grep | awk '{print $1}'); do
+        if [ "$pid" != "$$" ]; then
+            kill -9 "$pid" 2>/dev/null
+        fi
+    done
+    killall -9 socat 2>/dev/null
+    echo "Done."
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+status() {
+    if netstat -an | grep -q ":${LOCAL_PORT}.*LISTEN"; then
+        echo "socat bridge is RUNNING."
+        return 0
+    else
+        echo "socat bridge is STOPPED."
+        return 1
+    fi
+}
+
+case "$1" in
+    start)   start ;;
+    stop)    stop ;;
+    restart) restart ;;
+    status)  status ;;
+    *)       echo "Usage: $0 {start|stop|restart|status}"; exit 1 ;;
+esac

@@ -1,0 +1,13 @@
+diff --git a/leviculum-std/src/lib.rs b/leviculum-std/src/lib.rs
+--- a/leviculum-std/src/lib.rs
++++ b/leviculum-std/src/lib.rs
+@@ -1,5 +1,5 @@
+-use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::atomic::{AtomicUsize, Ordering};
+ 
+ pub struct TrafficCounters {
+-    pub rx_bytes: AtomicU64,
+-    pub tx_bytes: AtomicU64,
++    pub rx_bytes: AtomicUsize,
++    pub tx_bytes: AtomicUsize,
+ }

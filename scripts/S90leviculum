@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# ==============================================================================
+# LEVICULUM SERVICE WRAPPER (lnsd + lblogd)
+# ==============================================================================
+ENABLED=yes
+SCRIPT="/tmp/mnt/sda1/home/lblogd/lblog.sh"
+# ==============================================================================
+
+start() {
+    [ "$ENABLED" != "yes" ] && return
+    
+    if [ ! -f "$SCRIPT" ]; then
+        echo "Error: Leviculum control script not found at $SCRIPT"
+        return 1
+    fi
+
+    echo "Starting Leviculum services (lnsd + lblogd)..."
+    HOME=/tmp/mnt/sda1/home/lblogd "$SCRIPT" start
+}
+
+stop() {
+    if [ ! -f "$SCRIPT" ]; then
+        echo "Error: Leviculum control script not found at $SCRIPT"
+        return 1
+    fi
+
+    echo "Stopping Leviculum services (lnsd + lblogd)..."
+    HOME=/tmp/mnt/sda1/home/lblogd "$SCRIPT" stop
+}
+
+restart() {
+    if [ ! -f "$SCRIPT" ]; then
+        echo "Error: Leviculum control script not found at $SCRIPT"
+        return 1
+    fi
+
+    echo "Restarting Leviculum services..."
+    HOME=/tmp/mnt/sda1/home/lblogd "$SCRIPT" restart
+}
+
+status() {
+    if [ ! -f "$SCRIPT" ]; then
+        echo "Leviculum script is missing."
+        return 1
+    fi
+
+    HOME=/tmp/mnt/sda1/home/lblogd "$SCRIPT" status
+}
+
+case "$1" in
+    start)   start ;;
+    stop)    stop ;;
+    restart) restart ;;
+    status)  status ;;
+    *)       echo "Usage: $0 {start|stop|restart|status}"; exit 1 ;;
+esac

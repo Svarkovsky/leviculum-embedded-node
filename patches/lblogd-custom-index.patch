@@ -1,0 +1,14 @@
+diff --git a/lblogd/src/content.rs b/lblogd/src/content.rs
+--- a/lblogd/src/content.rs
++++ b/lblogd/src/content.rs
+@@ -10,6 +10,14 @@
+ pub fn get_index_page(posts_dir: &Path) -> String {
++    // If index.mu exists in posts_dir, return its content directly
++    let custom_index = posts_dir.join("index.mu");
++    if custom_index.exists() {
++        if let Ok(content) = std::fs::read_to_string(&custom_index) {
++            return content;
++        }
++    }
++
+     // Default index auto-generation logic follows...
