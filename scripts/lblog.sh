@@ -9,8 +9,6 @@ LBLOGD_LOG="$BASE_DIR/lblogd.log"
 CACHE_DIR="/tmp/lblogd_cache"
 IDENTITIES_DIR="$BASE_DIR/identities"
 
-export HOME="$BASE_DIR"
-
 start() {
     echo "Starting lnsd network transport..."
     if ps | grep -v grep | grep -q "$LNSD_BIN"; then
@@ -18,9 +16,16 @@ start() {
     else
         "$LNSD_BIN" > "$LNSD_LOG" 2>&1 &
         echo "[+] lnsd successfully started in the background."
-        # Classic race condition fix: Give lnsd a moment to initialize and open its IPC socket
-        echo "Waiting for lnsd to initialize and create IPC socket..."
-        sleep 3
+        echo "Waiting for lnsd to initialize and open IPC port 37428..."
+        i=1
+        while [ $i -le 15 ]; do
+            if netstat -an | grep -q "37428"; then
+                echo "[+] lnsd is now listening on port 37428."
+                break
+            fi
+            sleep 1
+            i=$((i+1))
+        done
     fi
 
     echo "Preparing cache in RAM..."
@@ -38,9 +43,21 @@ start() {
 }
 
 stop() {
-    echo "Stopping lblogd and lnsd services..."
-    killall -9 lblogd lnsd 2>/dev/null
-    echo "[-] Services stopped."
+    echo "Stopping lblogd blog server..."
+    if ps | grep -v grep | grep -q "$LBLOGD_BIN"; then
+        killall -9 lblogd >/dev/null 2>&1
+        echo "[+] lblogd successfully stopped."
+    else
+        echo "[-] lblogd is not running."
+    fi
+
+    echo "Stopping lnsd network transport..."
+    if ps | grep -v grep | grep -q "$LNSD_BIN"; then
+        killall -9 lnsd >/dev/null 2>&1
+        echo "[+] lnsd successfully stopped."
+    else
+        echo "[-] lnsd is not running."
+    fi
 }
 
 status() {
@@ -67,7 +84,6 @@ case "$1" in
         ;;
     restart)
         stop
-        sleep 2
         start
         ;;
     status)
