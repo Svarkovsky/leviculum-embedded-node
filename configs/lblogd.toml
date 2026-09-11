@@ -20,8 +20,9 @@ files_dir = "/tmp/mnt/sda1/home/lblogd/files"
 # Maximum size of files allowed to be shared/downloaded (10 MB)
 max_file_bytes = 10485760
 
-# Automatically watch posts_dir for new or modified posts without restarting
-watch_posts = true
+# Disabled to save a background thread and inotify OS resources, saving ~3.5 MB of RAM!
+# Use 'killall -HUP lblogd' to manually reload posts when you add new files.
+watch_posts = false
 
 [blog]
 title = "My First Reticulum Site"
@@ -45,3 +46,7 @@ acme = false
 # By setting this to "0.0.0.0:8180", your blog becomes fully accessible over HTTP 
 # to any standard web browser on any device (phone, PC, tablet) connected to your local Wi-Fi!
 http_bind = "0.0.0.0:8180"
+
+[counter]
+# Disabled to save CPU cycles and RAM by avoiding hits database tables in memory
+enabled = false
