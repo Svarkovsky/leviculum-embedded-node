@@ -144,7 +144,7 @@ loglevel = 1                    # Log level: 1 (Info), 2 (Warning), 3 (Error), 0
     enabled = yes
     sam_host = 127.0.0.1
     sam_port = 7656
-    peers = ["s2hv32euft4t5v4rb6ommh37kcwbwxsjeda33dujx4ool2a3jyfa.b32.i2p"]
+    peers = peers.b32.i2p
 
   # Connects to public Reticulum community nodes
   [[WDGWars Node]]
