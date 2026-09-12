@@ -140,6 +140,7 @@ loglevel = 1                    # Log level: 1 (Info), 2 (Warning), 3 (Error), 0
   # Connects to global I2P network via the lightweight socat SAM bridge
   [[I2P Bridge Interface]]
     type = I2PInterface
+    reconnect_wait = 120
     enabled = yes
     sam_host = 127.0.0.1
     sam_port = 7656
