@@ -1,8 +1,6 @@
 #!/bin/sh
 
 # ==============================================================================
-# SOCAT SAM BRIDGE FOR I2P
-# ==============================================================================
 ENABLED=yes
 PROCS=socat
 PATH=/opt/sbin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -10,37 +8,47 @@ PATH=/opt/sbin:/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:
 TARGET_IP="192.168.5.100"
 TARGET_PORT="7656"
 LOCAL_PORT="7656"
+PIDFILE="/var/run/socat_bridge.pid"
 # ==============================================================================
 
 start() {
     [ "$ENABLED" != "yes" ] && return
     
+    if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+        echo "socat bridge loop is already running."
+        return 0
+    fi
+
     if netstat -an | grep -q ":${LOCAL_PORT}.*LISTEN"; then
-        echo "socat bridge is already running (port ${LOCAL_PORT} is busy)."
+        echo "socat bridge port ${LOCAL_PORT} is already busy by an external process."
         return 0
     fi
 
     echo "Starting resilient auto-restarting socat loop..."
     
-    # Run a persistent loop in the background: if socat drops, restart after 1 second
+    # 
     (
         while true; do
             socat TCP4-LISTEN:${LOCAL_PORT},reuseaddr,fork TCP4:${TARGET_IP}:${TARGET_PORT},connect-timeout=5
             sleep 1
         done
-    ) >/dev/null 2>&1 &
+    ) </dev/null >/dev/null 2>&1 &
     
+    echo $! > "$PIDFILE"
     echo "Done."
 }
 
 stop() {
     echo "Stopping socat loop and processes..."
-    # Safely find all background S50socat processes and terminate them
-    for pid in $(ps w | grep "S50socat" | grep -v grep | awk '{print $1}'); do
-        if [ "$pid" != "$$" ]; then
-            kill -9 "$pid" 2>/dev/null
-        fi
-    done
+    
+    # 
+    if [ -f "$PIDFILE" ]; then
+        PID=$(cat "$PIDFILE")
+        kill -9 "$PID" 2>/dev/null
+        rm -f "$PIDFILE"
+    fi
+    
+    #
     killall -9 socat 2>/dev/null
     echo "Done."
 }
@@ -52,7 +60,7 @@ restart() {
 }
 
 status() {
-    if netstat -an | grep -q ":${LOCAL_PORT}.*LISTEN"; then
+    if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
         echo "socat bridge is RUNNING."
         return 0
     else
