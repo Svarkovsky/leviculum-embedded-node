@@ -1,3 +1,8 @@
+<sub>*The provided files are pre-compiled binaries. The configuration of settings, network interfaces, and execution environments is always highly individual and depends on your specific hardware, firmware version, and network topology. The developer cannot test or cover all possible use cases and scenarios; therefore, this build is provided "AS IS", and adapting it to your specific needs remains your responsibility.*</sub> 
+
+
+---
+
 # Leviculum Embedded Node
 
 This repository provides configuration examples, deployment scripts, and optimization guidelines for running a lightweight, zero-dependency, statically-linked Reticulum transport (`lnsd`) and NomadNet/Micron blog server (`lblogd`) on resource-constrained embedded devices (tested on **ASUS RT-AC57U V3**, MIPS Big-Endian architecture, running on ASUSWRT embedded Linux without a hardware FPU).
